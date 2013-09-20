@@ -1,14 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{11F00036-9889-49DF-8808-B24E0AE236ED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailgun.Web", "Mailgun.Web\Mailgun.Web.csproj", "{E00F6355-E823-4CEE-BBEF-A8B5503585C1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8555886E-FA75-4F49-83F8-74304BB6F0E2}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mailgun.Public", "Mailgun.Public\Mailgun.Public.csproj", "{90867F19-3207-4913-911F-B3E76D1340CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,10 +16,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{90867F19-3207-4913-911F-B3E76D1340CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{90867F19-3207-4913-911F-B3E76D1340CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{90867F19-3207-4913-911F-B3E76D1340CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{90867F19-3207-4913-911F-B3E76D1340CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E00F6355-E823-4CEE-BBEF-A8B5503585C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E00F6355-E823-4CEE-BBEF-A8B5503585C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E00F6355-E823-4CEE-BBEF-A8B5503585C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E00F6355-E823-4CEE-BBEF-A8B5503585C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
