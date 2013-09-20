@@ -26,7 +26,7 @@ namespace Mailgun.Web
 			//    appId: "",
 			//    appSecret: "");
 
-			//OAuthWebSecurity.RegisterGoogleClient();
+			OAuthWebSecurity.RegisterGoogleClient();
 		}
 	}
 }
