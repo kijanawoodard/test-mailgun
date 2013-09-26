@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Mailgun.Web.Controllers;
 using Microsoft.Web.WebPages.OAuth;
 using Mailgun.Web.Models;
 
@@ -27,6 +28,8 @@ namespace Mailgun.Web
 			//    appSecret: "");
 
 			OAuthWebSecurity.RegisterGoogleClient();
+
+			OAuthWebSecurity.RegisterClient(new BasecampAuthController.BasecampOAuth2Client("a97185302e03926bcc6d8bc2a008b1b4293268c7", "b4ae9a20491e3775b3ca65b497a1dba5d367eb51"));
 		}
 	}
 }
