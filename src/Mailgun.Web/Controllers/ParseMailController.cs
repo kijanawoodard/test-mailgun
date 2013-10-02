@@ -45,7 +45,7 @@ namespace Mailgun.Web.Controllers
 
 				SendSimpleMessage(command.Sender, "user " + user.UserName);
 
-				SendSimpleMessage(command.Sender, "BC " + user.BasecampCredentials);
+				SendSimpleMessage(command.Sender, string.Format("BC is null: {0}", user.BasecampCredentials == null));
 
 				if (user.BasecampCredentials == null || string.IsNullOrWhiteSpace(user.BasecampCredentials.AccessToken))
 					return Request.CreateResponse(HttpStatusCode.BadRequest);
