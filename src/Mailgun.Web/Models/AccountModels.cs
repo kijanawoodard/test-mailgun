@@ -35,7 +35,7 @@ namespace Mailgun.Web.Models
 		[DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
 		public int UserId { get; set; }
 		public string UserName { get; set; }
-		public BasecampCredentials BasecampCredentials { get; set; }
+		public virtual BasecampCredentials BasecampCredentials { get; set; }
 	}
 
 	public class RegisterExternalLoginModel

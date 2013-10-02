@@ -1,4 +1,4 @@
-	namespace Mailgun.Web.Migrations
+namespace Mailgun.Web.Migrations
 {
     using System;
     using System.Data.Entity;
