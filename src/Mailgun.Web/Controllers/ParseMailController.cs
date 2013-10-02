@@ -59,8 +59,18 @@ namespace Mailgun.Web.Controllers
 				if (index >= 0)
 				{
 					var msg = match.Value.Replace(lookfor, "Complete");
-					//SendSimpleMessage(command.Sender, msg);
-					basecamp.CreateTask(msg, token);
+
+					var notice = "task created ok";
+					try
+					{
+						basecamp.CreateTask(msg, token);
+					}
+					catch (System.Exception e)
+					{
+						notice = e.ToString();
+					}
+
+					SendSimpleMessage(command.Sender, notice);
 					break;
 				}
 			}
