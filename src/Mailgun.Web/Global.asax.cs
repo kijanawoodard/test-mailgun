@@ -6,6 +6,10 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using Autofac;
+using Autofac.Integration.Mvc;
+using Mailgun.Web.Controllers;
+using SimpleAuthentication.Mvc;
 
 namespace Mailgun.Web
 {
@@ -23,6 +27,15 @@ namespace Mailgun.Web
 			RouteConfig.RegisterRoutes(RouteTable.Routes);
 			BundleConfig.RegisterBundles(BundleTable.Bundles);
 			AuthConfig.RegisterAuth();
+
+			var builder = new ContainerBuilder();
+
+			builder.RegisterType<SampleMvcAutoAuthenticationCallbackProvider>().As<IAuthenticationCallbackProvider>();
+			builder.RegisterControllers(typeof(MvcApplication).Assembly);
+			builder.RegisterControllers(typeof(SimpleAuthenticationController).Assembly);
+
+			var container = builder.Build();
+			DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
 		}
 	}
 }

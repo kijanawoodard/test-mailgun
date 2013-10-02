@@ -3,6 +3,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Threading;
 using System.Web.Mvc;
+using Mailgun.Web.Migrations;
 using WebMatrix.WebData;
 using Mailgun.Web.Models;
 
@@ -25,7 +26,7 @@ namespace Mailgun.Web.Filters
 		{
 			public SimpleMembershipInitializer()
 			{
-				Database.SetInitializer<UsersContext>(null);
+				Database.SetInitializer<UsersContext>(new MigrateDatabaseToLatestVersion<UsersContext, Configuration>());
 
 				try
 				{

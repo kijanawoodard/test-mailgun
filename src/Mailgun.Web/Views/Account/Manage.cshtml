@@ -1,4 +1,5 @@
-﻿@model Mailgun.Web.Models.LocalPasswordModel
+﻿@using SimpleAuthentication.Mvc
+@model Mailgun.Web.Models.LocalPasswordModel
 @{
     ViewBag.Title = "Manage Account";
 }
@@ -19,6 +20,13 @@ else
 { 
     @Html.Partial("_SetPasswordPartial")
 }
+
+<section>
+    <h3>Add Task Services</h3>
+    <form action="@Url.RedirectToProvider("ThirtySevenSignals")" method="GET">
+        <input type="submit" value="Basecamp">
+    </form>
+</section>
 
 <section id="externalLogins">
     @Html.Action("RemoveExternalLogins")

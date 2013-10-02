@@ -7,12 +7,18 @@ using System.Net;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 using DotNetOpenAuth.AspNet;
 using DotNetOpenAuth.AspNet.Clients;
 using DotNetOpenAuth.Messaging;
+using Mailgun.Web.Models;
 using Microsoft.Web.WebPages.OAuth;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RestSharp;
+using SimpleAuthentication.Core;
+using SimpleAuthentication.Mvc;
+using WebMatrix.WebData;
 
 namespace Mailgun.Web.Controllers
 {
@@ -153,6 +159,8 @@ namespace Mailgun.Web.Controllers
 				OAuthWebSecurity.RequestAuthentication(Provider, ReturnUrl);
 			}
 		}
+
+		
 
 		public class BasecampOAuth2Client : OAuth2Client
 		{
@@ -354,4 +362,190 @@ namespace Mailgun.Web.Controllers
 			}
 		}
     }
+
+	public class SampleMvcAutoAuthenticationCallbackProvider : IAuthenticationCallbackProvider
+	{
+		public ActionResult Process(HttpContextBase context, AuthenticateCallbackData model)
+		{
+			using (var db = new UsersContext())
+			{
+				var userId = WebSecurity.GetUserId(HttpContext.Current.User.Identity.Name);
+				var user = db.UserProfiles.First(u => u.UserId == userId);
+				user.BasecampCredentials = user.BasecampCredentials ?? new BasecampCredentials();
+				user.BasecampCredentials.AccessToken = model.AuthenticatedClient.AccessToken.PublicToken;
+				user.BasecampCredentials.RefreshToken = model.AuthenticatedClient.AccessToken.SecretToken;
+
+				db.SaveChanges();
+			}
+			
+			var route = new RouteValueDictionary()
+			{
+				{"action", "Manage"},
+				{"controller", "Account"}
+			};
+			return new RedirectToRouteResult(route);
+			return new ContentResult
+			{
+				Content = model.AuthenticatedClient.UserInformation.Name
+			};
+			return new ViewResult
+			{
+				ViewName = "Home",
+				ViewData = new ViewDataDictionary(new AuthenticateCallbackViewModel
+				{
+					AuthenticatedClient = model.AuthenticatedClient,
+					Exception = model.Exception,
+					ReturnUrl = model.ReturnUrl
+				})
+			};
+		}
+
+		public ActionResult OnRedirectToAuthenticationProviderError(HttpContextBase context, string errorMessage)
+		{
+			return new ContentResult
+			{
+				Content = errorMessage
+			};
+			return new ViewResult
+			{
+				ViewName = "Home",
+				ViewData = new ViewDataDictionary(new IndexViewModel
+				{
+					ErrorMessage = errorMessage
+				})
+			};
+		}
+
+		public class AuthenticateCallbackViewModel
+		{
+			public IAuthenticatedClient AuthenticatedClient { get; set; }
+			public Exception Exception { get; set; }
+			public string ReturnUrl { get; set; }
+		}
+
+		public class IndexViewModel
+		{
+			public string ErrorMessage { get; set; }
+		}
+	}
+
+	public class BasecampClient
+	{
+		private const string UserInfoEndpoint = "https://launchpad.37signals.com/authorization.json";
+		private string _task;
+		private string _accessToken;
+		private RestClient _client;
+
+		public void CreateTask(string task, string accessToken)
+		{
+			_task = task;
+			_accessToken = accessToken;
+			_client = new RestClient();
+			_client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(_accessToken);
+			_client.UserAgent = "email to tasks (maily@wyldeye.com)";
+
+			FindBasecamp();
+		}
+
+		private void FindBasecamp()
+		{
+			var request = new RestRequest(UserInfoEndpoint);
+
+			var response = _client.Execute<dynamic>(request);
+			var data = JsonConvert.DeserializeObject<dynamic>(response.Content);
+			foreach (var account in data.accounts)
+			{
+				if (account.product != "bcx")
+					continue;
+
+				FindOrCreateProject(account.href);
+				return;
+			}
+		}
+
+		private void FindOrCreateProject(dynamic basecamp)
+		{
+			const string projectName = "Tasks From Email";
+
+			var url = string.Format("{0}/projects.json", basecamp);
+			var request = new RestRequest(url);
+
+			var response = _client.Execute<dynamic>(request);
+			var data = JsonConvert.DeserializeObject<dynamic>(response.Content);
+			foreach (var project in data)
+			{
+				if (project.name != projectName)
+					continue;
+
+				FindTodoLists(project.url);
+				return;
+			}
+
+			request.Method = Method.POST;
+			var values = new {name = projectName, description = "Tasks automatically created from email!"};
+			request.AddParameter("application/json", JsonConvert.SerializeObject(values), ParameterType.RequestBody); 
+			request.RequestFormat = DataFormat.Json;
+
+			response = _client.Execute<dynamic>(request);
+			if (response.StatusCode != HttpStatusCode.Created)
+				return;
+
+			data = JsonConvert.DeserializeObject<dynamic>(response.Content);
+			FindOrCreateTodoList(data.todolists.url);
+		}
+
+		void FindTodoLists(dynamic project)
+		{
+			var url = string.Format("{0}", project); //convert to string
+			var request = new RestRequest(url);
+
+			var response = _client.Execute<dynamic>(request);
+			var data = JsonConvert.DeserializeObject<dynamic>(response.Content);
+			FindOrCreateTodoList(data.todolists.url);
+		}
+
+		void FindOrCreateTodoList(dynamic todolists)
+		{
+			var name = DateTime.Now.ToLongDateString();
+			var url = string.Format("{0}", todolists); //convert to string
+			var request = new RestRequest(url);
+
+			var response = _client.Execute<dynamic>(request);
+			var data = JsonConvert.DeserializeObject<dynamic>(response.Content);
+			foreach (var list in data)
+			{
+				if (list.name != name)
+					continue;
+
+				AddTodo(list.url);
+				return;
+			}
+
+			request.Method = Method.POST;
+			var values = new { name = name, description = "Tasks created " + name };
+			request.AddParameter("application/json", JsonConvert.SerializeObject(values), ParameterType.RequestBody);
+			request.RequestFormat = DataFormat.Json;
+
+			response = _client.Execute<dynamic>(request);
+			if (response.StatusCode != HttpStatusCode.Created)
+				return;
+
+			url = response.Headers.First(x => x.Name == "Location").Value;
+			AddTodo(url);
+		}
+
+		void AddTodo(dynamic list)
+		{
+			var url = string.Format("{0}", list).Replace(".json", "/todos.json");
+			var request = new RestRequest(url, Method.POST);
+			
+			var values = new { content = _task };
+			request.AddParameter("application/json", JsonConvert.SerializeObject(values), ParameterType.RequestBody);
+			request.RequestFormat = DataFormat.Json;
+
+			var response = _client.Execute<dynamic>(request);
+			if (response.StatusCode != HttpStatusCode.Created)
+				return;
+		}
+	}
 }

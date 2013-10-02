@@ -18,6 +18,16 @@ namespace Mailgun.Web.Models
 		public DbSet<UserProfile> UserProfiles { get; set; }
 	}
 
+	[Table("BasecampCredentials")]
+	public class BasecampCredentials
+	{
+		[Key]
+		[DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
+		public int BasecampCredentialsId { get; set; }
+		public string AccessToken { get; set; }
+		public string RefreshToken { get; set; }
+	}
+
 	[Table("UserProfile")]
 	public class UserProfile
 	{
@@ -25,6 +35,7 @@ namespace Mailgun.Web.Models
 		[DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
 		public int UserId { get; set; }
 		public string UserName { get; set; }
+		public BasecampCredentials BasecampCredentials { get; set; }
 	}
 
 	public class RegisterExternalLoginModel

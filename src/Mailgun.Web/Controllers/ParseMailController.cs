@@ -1,10 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.Http;
+using Mailgun.Web.Models;
 using RestSharp;
+using WebMatrix.WebData;
 
 namespace Mailgun.Web.Controllers
 {
@@ -30,6 +34,21 @@ namespace Mailgun.Web.Controllers
 			command.Body = form.Get("body-plain");
 			command.Stripped = form.Get("stripped-text");
 
+			string token;
+
+			using (var db = new UsersContext())
+			{
+				var user = db.UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == command.Sender.ToLower());
+				if (user == null)
+					return Request.CreateResponse(HttpStatusCode.BadRequest);
+
+				if (user.BasecampCredentials == null || string.IsNullOrWhiteSpace(user.BasecampCredentials.AccessToken))
+					return Request.CreateResponse(HttpStatusCode.BadRequest);
+
+				token = user.BasecampCredentials.AccessToken;
+			}
+
+			var basecamp = new BasecampClient();
 
 			var lookfor = "I will complete";
 			var rx = new Regex(@"(\S.+?[.!?])(?=\s+|$)");
@@ -40,7 +59,8 @@ namespace Mailgun.Web.Controllers
 				if (index >= 0)
 				{
 					var msg = match.Value.Replace(lookfor, "Complete");
-					SendSimpleMessage(command.Sender, msg);
+					//SendSimpleMessage(command.Sender, msg);
+					basecamp.CreateTask(msg, token);
 					break;
 				}
 			}
