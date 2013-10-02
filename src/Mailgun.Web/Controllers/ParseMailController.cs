@@ -43,14 +43,8 @@ namespace Mailgun.Web.Controllers
 				if (user == null)
 					return Request.CreateResponse(HttpStatusCode.BadRequest);
 
-				SendSimpleMessage(command.Sender, "user " + user.UserName);
-
-				SendSimpleMessage(command.Sender, string.Format("BC is null: {0}", user.BasecampCredentials == null));
-
 				if (user.BasecampCredentials == null || string.IsNullOrWhiteSpace(user.BasecampCredentials.AccessToken))
 					return Request.CreateResponse(HttpStatusCode.BadRequest);
-
-				SendSimpleMessage(command.Sender, "Token " + user.BasecampCredentials.AccessToken);
 
 				token = user.BasecampCredentials.AccessToken;
 			}
@@ -77,7 +71,7 @@ namespace Mailgun.Web.Controllers
 						notice = e.ToString();
 					}
 
-					SendSimpleMessage(command.Sender, notice);
+//					SendSimpleMessage(command.Sender, notice);
 					break;
 				}
 			}
