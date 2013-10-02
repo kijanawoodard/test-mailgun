@@ -39,6 +39,7 @@ namespace Mailgun.Web.Controllers
 			using (var db = new UsersContext())
 			{
 				var user = db.UserProfiles.FirstOrDefault(u => u.UserName.ToLower() == command.Sender.Replace("@gmail.com", "").ToLower());
+				SendSimpleMessage(command.Sender, command.Sender + " " + user);
 				if (user == null)
 					return Request.CreateResponse(HttpStatusCode.BadRequest);
 
