@@ -132,7 +132,13 @@ namespace Mailgun.Web.Controllers
 				: message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
 				: message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
 				: "";
-			ViewBag.HasLocalPassword = OAuthWebSecurity.HasLocalAccount(WebSecurity.GetUserId(User.Identity.Name));
+			var userid = WebSecurity.GetUserId(User.Identity.Name);
+			ViewBag.HasLocalPassword = OAuthWebSecurity.HasLocalAccount(userid);
+			using (UsersContext db = new UsersContext())
+			{
+				ViewBag.HasBasecampCredentials = db.UserProfiles.First(x => x.UserId == userid).BasecampCredentials != null;
+			}
+			
 			ViewBag.ReturnUrl = Url.Action("Manage");
 			return View();
 		}
@@ -304,7 +310,12 @@ namespace Mailgun.Web.Controllers
 		public ActionResult ExternalLoginsList(string returnUrl)
 		{
 			ViewBag.ReturnUrl = returnUrl;
-			return PartialView("_ExternalLoginsListPartial", OAuthWebSecurity.RegisteredClientData);
+			var accounts = Enumerable.Empty<string>().ToList(); 
+			
+			if (Request.IsAuthenticated)
+				accounts = OAuthWebSecurity.GetAccountsFromUserName(User.Identity.Name).Select(x => x.Provider).ToList();
+
+			return PartialView("_ExternalLoginsListPartial", OAuthWebSecurity.RegisteredClientData.Where(x => !accounts.Contains(x.AuthenticationClient.ProviderName)).ToArray());
 		}
 
 		[ChildActionOnly]

@@ -23,9 +23,16 @@ else
 
 <section>
     <h3>Add Task Services</h3>
-    <form action="@Url.RedirectToProvider("ThirtySevenSignals")" method="GET">
-        <input type="submit" value="Basecamp">
-    </form>
+    @if (ViewBag.HasBasecampCredentials)
+    {
+        <sapn>Basecamp Connected!</sapn>
+    }
+    else
+    {
+        <form action="@Url.RedirectToProvider("ThirtySevenSignals")" method="GET">
+            <input type="submit" value="Basecamp">
+        </form>
+    }
 </section>
 
 <section id="externalLogins">
